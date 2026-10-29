@@ -60,6 +60,18 @@ $("btnPrepareNext").onclick=async()=>{
  try{await api("/api/admin/prepare_next_game",{method:"POST"});await loadAdmin();$("adminMsg").textContent="Ready for Game " + currentGameState.game_number;}catch(e){$("adminMsg").textContent=e.message}
 };
 
+// NEW RESET BUTTON LOGIC
+$("btnResetGame").onclick = async () => {
+    if(!confirm("⚠️ WARNING: This will kick all players out, delete all scores, and reset the game back to Game 1. Your uploaded photos will remain safe. Are you sure?")) return;
+    try {
+        await api("/api/admin/reset", {method:"POST"});
+        await loadAdmin();
+        $("adminMsg").textContent = "Game completely reset. Ready for a new competition.";
+    } catch(e) {
+        $("adminMsg").textContent = e.message;
+    }
+};
+
 $("logout").onclick=async()=>{try{await api("/api/admin/logout",{method:"POST"});}catch{}showScreen("welcome")};
 
 function renderAdminState(state){

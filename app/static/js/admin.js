@@ -60,7 +60,6 @@ $("btnPrepareNext").onclick=async()=>{
  try{await api("/api/admin/prepare_next_game",{method:"POST"});await loadAdmin();$("adminMsg").textContent="Ready for Game " + currentGameState.game_number;}catch(e){$("adminMsg").textContent=e.message}
 };
 
-// NEW RESET BUTTON LOGIC
 $("btnResetGame").onclick = async () => {
     if(!confirm("⚠️ WARNING: This will kick all players out, delete all scores, and reset the game back to Game 1. Your uploaded photos will remain safe. Are you sure?")) return;
     try {
@@ -77,8 +76,49 @@ $("logout").onclick=async()=>{try{await api("/api/admin/logout",{method:"POST"})
 function renderAdminState(state){
  if(!state)return;
  const box=$("adminState");box.innerHTML=`<strong>Status: ${state.status}</strong><p>Players: ${state.players.length}</p>`;
- state.players.forEach(p=>{const line=document.createElement("div");line.className="playerline";const n=document.createElement("span");n.textContent=p.nickname;const r=document.createElement("span");r.textContent=p.finished?"Finished Game":`Round ${Math.min(p.round+1,3)} / 3`;line.append(n,r);box.append(line)});
- if(state.current_game_results?.length){const h=document.createElement("h4");h.textContent="Current Game Finishing Order";box.append(h);state.current_game_results.forEach((r,i)=>{const line=document.createElement("div");line.className="playerline";line.innerHTML=`<span>${i+1}. ${r.nickname}</span> <span>Score: ${r.score}/3 | Time: ${(r.elapsed_ms/1000).toFixed(2)} s</span>`;box.append(line)})}
+ 
+ const liveGrid = document.createElement("div");
+ liveGrid.className = "live-grid-container";
+ 
+ state.players.forEach(p=>{
+   const line=document.createElement("div");line.className="playerline";
+   const n=document.createElement("span");n.textContent=p.nickname;
+   const r=document.createElement("span");r.textContent=p.finished?"Finished Game":`Round ${Math.min(p.round+1,3)} / 3`;
+   line.append(n,r);box.append(line);
+   
+   // Draw Live Mini Puzzle
+   if(!p.finished && p.tiles && p.photo_url) {
+       const mini = document.createElement("div");
+       mini.className = "mini-puzzle";
+       p.tiles.forEach(src => {
+           const t = document.createElement("div");
+           t.style.backgroundImage = `url("${p.photo_url}")`;
+           t.style.backgroundSize = "300% 300%";
+           const x = src % 3, y = Math.floor(src / 3);
+           t.style.backgroundPosition = `${x*50}% ${y*50}%`;
+           mini.append(t);
+       });
+       const wrap = document.createElement("div");
+       wrap.className = "mini-wrap";
+       wrap.append(document.createElement("p"), mini);
+       wrap.querySelector("p").textContent = p.nickname;
+       liveGrid.append(wrap);
+   }
+ });
+ 
+ if(liveGrid.children.length > 0) {
+     box.append(document.createElement("h4")).textContent = "🔴 Live Player Boards";
+     box.append(liveGrid);
+ }
+
+ if(state.current_game_results?.length){
+     const h=document.createElement("h4");h.textContent="Current Game Finishing Order";box.append(h);
+     state.current_game_results.forEach((r,i)=>{
+         const line=document.createElement("div");line.className="playerline";
+         line.innerHTML=`<span>${i+1}. ${r.nickname}</span> <span>Score: ${r.score}/3 | Time: ${(r.elapsed_ms/1000).toFixed(2)} s</span>`;
+         box.append(line);
+     });
+ }
 }
 
 // ================= AUDIENCE MODE LOGIC =================

@@ -46,6 +46,11 @@ function swapTiles(a,b){
  const temp=a.dataset.source;a.dataset.source=b.dataset.source;b.dataset.source=temp;
  const update=tile=>{const src=Number(tile.dataset.source),x=src%3,y=Math.floor(src/3);tile.style.backgroundPosition=`${x*50}% ${y*50}%`;};
  update(a);update(b);a.classList.remove("selected");b.classList.remove("selected");
+ 
+ // Send the new order to the server for the Admin's "Live View"
+ const tiles=[...$("puzzleGrid").querySelectorAll(".tile")];
+ const order=tiles.map(t=>Number(t.dataset.source));
+ api("/api/player/move", {method:"POST", headers:{"X-Player-Token":playerToken}, body: JSON.stringify({order})}).catch(()=>{});
 }
 
 $("checkPuzzle").onclick=async()=>{

@@ -1,0 +1,16 @@
+import os
+
+def env(name: str, default: str = "") -> str:
+    return os.getenv(name, default)
+
+APP_NAME = "Krishiv's Birthday Photo Puzzle Race"
+PUBLIC_BASE_URL = env("PUBLIC_BASE_URL", "http://127.0.0.1:8000").rstrip("/")
+UPSTASH_REDIS_REST_URL = env("UPSTASH_REDIS_REST_URL")
+UPSTASH_REDIS_REST_TOKEN = env("UPSTASH_REDIS_REST_TOKEN")
+ADMIN_USERNAME = env("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = env("ADMIN_PASSWORD", "admin")
+SESSION_SECRET = env("SESSION_SECRET", "CHANGE-ME-TO-A-LONG-RANDOM-SECRET")
+CLOUDINARY_CLOUD_NAME = env("CLOUDINARY_CLOUD_NAME")
+CLOUDINARY_API_KEY = env("CLOUDINARY_API_KEY")
+CLOUDINARY_API_SECRET = env("CLOUDINARY_API_SECRET")
+MAX_UPLOAD_MB = int(env("MAX_UPLOAD_MB", "8"))

@@ -31,7 +31,7 @@ async function loadAdmin(){
 }
 
 function renderGallery(photos,selected){
- $("photoCount").textContent=`${photos.length}/15`;const g=$("gallery"),s=$("selection");g.innerHTML="";s.innerHTML="";
+ $("photoCount").textContent=`${photos.length}/25`;const g=$("gallery"),s=$("selection");g.innerHTML="";s.innerHTML="";
  photos.forEach((p,i)=>{
   const card=document.createElement("div");card.className="photo-card";
   const img=document.createElement("img");img.src=p.url;img.alt=p.name;

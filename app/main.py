@@ -1,4 +1,4 @@
-import base64, hashlib, hmac, html, io, json, random, secrets, time
+import base64, hashlib, hmac, html, io, json, random, secrets, time, re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
@@ -304,10 +304,33 @@ async def submit_puzzle(body: PuzzleSubmit, request: Request):
         idx=p["round"]
         selected=g["selected"][idx]
         photos=load_photos()
-        distractors=[x["name"] for x in photos if x["id"]!=selected["photo_id"]]
-        random.shuffle(distractors)
+        
+        # --- NEW LOGIC: Prevent similar names (like Dabhi and Dabhi1) ---
+        def get_base_name(name):
+            # Removes trailing numbers and spaces to group similar names
+            return re.sub(r'\d+$', '', name).strip().lower()
+            
+        correct_base = get_base_name(selected["name"])
+        used_bases = {correct_base}
+        valid_distractors = []
+        
+        for photo in photos:
+            if photo["id"] == selected["photo_id"]:
+                continue
+            base = get_base_name(photo["name"])
+            # Only add if we haven't seen this base name yet
+            if base not in used_bases:
+                valid_distractors.append(photo["name"])
+                used_bases.add(base)
+                
+        # Fallback just in case there aren't enough unique names
+        if len(valid_distractors) < 3:
+            valid_distractors = [x["name"] for x in photos if x["id"]!=selected["photo_id"]]
+            valid_distractors = list(set(valid_distractors))
+            
+        random.shuffle(valid_distractors)
         opts=[{"label":selected["name"],"correct":True}]
-        opts += [{"label":name,"correct":False} for name in distractors[:3]]
+        opts += [{"label":name,"correct":False} for name in valid_distractors[:3]]
         random.shuffle(opts)
         p["options"]=[{"key":chr(65+i),"label":x["label"]} for i,x in enumerate(opts)]
         save_game(g)

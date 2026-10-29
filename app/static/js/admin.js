@@ -75,21 +75,26 @@ $("logout").onclick=async()=>{try{await api("/api/admin/logout",{method:"POST"})
 
 function renderAdminState(state){
  if(!state)return;
- const box=$("adminState");box.innerHTML=`<strong>Status: ${state.status}</strong><p>Players: ${state.players.length}</p>`;
+ const box=$("adminState");
+ box.innerHTML=`<strong>Status: ${state.status}</strong><p>Players: ${state.players.length}</p>`;
  
  const liveGrid = document.createElement("div");
  liveGrid.className = "live-grid-container";
- 
+ let activePlayers = 0;
+
  state.players.forEach(p=>{
-   const line=document.createElement("div");line.className="playerline";
-   const n=document.createElement("span");n.textContent=p.nickname;
-   const r=document.createElement("span");r.textContent=p.finished?"Finished Game":`Round ${Math.min(p.round+1,3)} / 3`;
-   line.append(n,r);box.append(line);
+   // Standard text line
+   const line=document.createElement("div");
+   line.className="playerline";
+   line.innerHTML = `<span>${p.nickname}</span> <span>${p.finished?"Finished Game":`Round ${Math.min(p.round+1,3)} / 3`}</span>`;
+   box.append(line);
    
    // Draw Live Mini Puzzle
    if(!p.finished && p.tiles && p.photo_url) {
+       activePlayers++;
        const mini = document.createElement("div");
        mini.className = "mini-puzzle";
+       
        p.tiles.forEach(src => {
            const t = document.createElement("div");
            t.style.backgroundImage = `url("${p.photo_url}")`;
@@ -98,23 +103,40 @@ function renderAdminState(state){
            t.style.backgroundPosition = `${x*50}% ${y*50}%`;
            mini.append(t);
        });
+       
        const wrap = document.createElement("div");
        wrap.className = "mini-wrap";
-       wrap.append(document.createElement("p"), mini);
-       wrap.querySelector("p").textContent = p.nickname;
+       const title = document.createElement("p");
+       title.textContent = p.nickname;
+       wrap.append(title);
+       wrap.append(mini);
        liveGrid.append(wrap);
    }
  });
  
- if(liveGrid.children.length > 0) {
-     box.append(document.createElement("h4")).textContent = "🔴 Live Player Boards";
+ if(activePlayers > 0) {
+     const h4 = document.createElement("h4");
+     h4.textContent = "🔴 Live Player Boards";
+     h4.style.marginTop = "20px";
+     h4.style.color = "#b91c50";
+     box.append(h4);
      box.append(liveGrid);
+ } else {
+     const h4 = document.createElement("h4");
+     h4.textContent = "Waiting for players to solve the puzzle...";
+     h4.style.marginTop = "10px";
+     h4.style.color = "#888";
+     box.append(h4);
  }
 
  if(state.current_game_results?.length){
-     const h=document.createElement("h4");h.textContent="Current Game Finishing Order";box.append(h);
+     const h=document.createElement("h4");
+     h.textContent="Current Game Finishing Order";
+     h.style.marginTop = "20px";
+     box.append(h);
      state.current_game_results.forEach((r,i)=>{
-         const line=document.createElement("div");line.className="playerline";
+         const line=document.createElement("div");
+         line.className="playerline";
          line.innerHTML=`<span>${i+1}. ${r.nickname}</span> <span>Score: ${r.score}/3 | Time: ${(r.elapsed_ms/1000).toFixed(2)} s</span>`;
          box.append(line);
      });

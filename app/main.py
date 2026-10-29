@@ -70,8 +70,14 @@ def public_state(game=None):
         "status":game["status"],
         "game_number":game.get("game_number", 1),
         "selected":game.get("selected",[]),
-        "players":[{"nickname":p["nickname"],"connected":p.get("connected",False),"round":p.get("round",0),"finished":p.get("finished",False)} for p in game.get("players",{}).values()],
-        # SORT: Score Highest first, then Time Lowest
+        "players":[{
+            "nickname": p["nickname"],
+            "connected": p.get("connected",False),
+            "round": p.get("round",0),
+            "finished": p.get("finished",False),
+            "tiles": p.get("tiles", {}).get("order") if p.get("tiles") else None,
+            "photo_url": game["selected"][p["round"]]["url"] if p["round"] < 3 and p["round"] < len(game.get("selected", [])) else None
+        } for p in game.get("players",{}).values()],
         "current_game_results":sorted(game.get("current_game_results",[]), key=lambda x: (-x.get("score", 0), x.get("elapsed_ms", 0)))
     }
 async def notify():
@@ -246,7 +252,6 @@ def make_round(g,p):
     if idx>=3: return None
     selected=g["selected"][idx]
     
-    # Options are NOT generated here anymore.
     p["correct_photo_id"]=selected["photo_id"]
     p["answer_verified"]=False
     p["guess_label"]=None
@@ -276,6 +281,15 @@ def get_round(request: Request):
     return {"status":"RUNNING","round":idx+1,"photo":{"id":selected["photo_id"],"url":selected["url"]},"options":p.get("options"),"tiles":p.get("tiles")}
 
 class PuzzleSubmit(BaseModel): order: list[int]
+
+@app.post("/api/player/move")
+async def submit_move(body: PuzzleSubmit, request: Request):
+    g=load_game(); p=find_player(g,request)
+    if p and p.get("tiles") and g["status"]=="RUNNING":
+        p["tiles"]["order"] = body.order
+        save_game(g); await notify()
+    return {"ok":True}
+
 @app.post("/api/player/puzzle/submit")
 async def submit_puzzle(body: PuzzleSubmit, request: Request):
     g=load_game(); p=find_player(g,request)
@@ -286,7 +300,6 @@ async def submit_puzzle(body: PuzzleSubmit, request: Request):
     if body.order!=list(range(9)): 
         return {"correct":False,"message":"Not solved yet."}
         
-    # Puzzle Solved! Generate Options.
     if not p.get("options"):
         idx=p["round"]
         selected=g["selected"][idx]

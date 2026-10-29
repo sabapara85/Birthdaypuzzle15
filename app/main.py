@@ -126,7 +126,7 @@ async def upload_photo(request: Request, name: str = Form(...), file: UploadFile
     content=await file.read()
     if len(content)>MAX_UPLOAD_MB*1024*1024: raise HTTPException(413, f"Maximum image size is {MAX_UPLOAD_MB} MB.")
     photos=load_photos()
-    if len(photos)>=15: raise HTTPException(400, "Maximum 15 photos. Delete one before adding another.")
+    if len(photos)>=25: raise HTTPException(400, "Maximum 25 photos. Delete one before adding another.")
     url=await persist_image(file, content)
     p={"id":secrets.token_hex(8),"name":name,"url":url}
     photos.append(p); save_photos(photos)

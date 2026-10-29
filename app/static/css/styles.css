@@ -32,3 +32,10 @@ main{max-width:1050px;margin:0 auto}.panel{background:#ffffffed;border:1px solid
 .audience-winner-board{background:#222;padding:30px;border-radius:20px;width:80%;max-width:600px;text-align:left}
 .audience-winner-board h2{color:var(--yellow);text-align:center;margin-bottom:20px;font-size:2.5rem}
 .audience-winner-board .playerline{font-size:1.5rem;padding:15px;color:#fff;border-color:#444}
+
+/* Live Admin Ghost Boards */
+.live-grid-container{display:flex;flex-wrap:wrap;gap:15px;margin:10px 0 25px 0;background:#fff;padding:15px;border-radius:14px;border:2px dashed #ccc}
+.mini-wrap{text-align:center}
+.mini-wrap p{margin:0 0 5px 0;font-size:0.85rem;font-weight:bold;color:var(--purple)}
+.mini-puzzle{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;width:75px;height:75px;background:#eee;border:2px solid #333;border-radius:4px;overflow:hidden;margin:0 auto}
+.mini-puzzle div{background-repeat:no-repeat}
